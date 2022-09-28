@@ -2,13 +2,23 @@
 #include "game.h"
 #include "player.h"
 
+namespace
+{
+	//キャラクターのサイズ
+	constexpr float kSizeX = 128.0f;
+	constexpr float kSizeY = 128.0f;
+
+	//ジャンプ力
+	constexpr float kJumpAcc = -18.0f;
+	//重力
+	constexpr float kGravity = 0.7f;
+}
+
 Player::Player()
 {
 	m_handle = -1;
 	m_fieldY = 0.0f;
 	m_isDead = false;
-	m_isJumpUp = false;
-	m_isJumpDown = false;
 }
 
 void Player::setGraphic(int handle)
@@ -30,34 +40,27 @@ void Player:: setup(float fieldY)
 
 void Player::update()
 {
-//	m_pos += m_vec;
+	if (m_isDead)	return;
+	m_pos += m_vec;
+
+	//地面との当たり判定
+	bool isField = false;
+	if (m_pos.y >= m_fieldY - m_graphSize.y)
+	{
+		m_pos.y = m_fieldY - m_graphSize.y;
+		isField = true;
+	}
 
 	// キー入力処理
 	int padState = GetJoypadInputState(DX_INPUT_KEY_PAD1);
 	if (padState & PAD_INPUT_1)
 	{
-		m_isJumpUp = true;
-	}
-
-	if (m_isJumpUp)
-	{
-		m_pos.y -= 4.0f;
-		if (m_pos.y <= 64.0f)
+		if (isField)
 		{
-			m_isJumpUp = false;
-			m_isJumpDown = true;
+			m_vec.y = kJumpAcc;//ジャンプ開始
 		}
 	}
-	if (m_isJumpDown)
-	{
-		m_pos.y += 4.0f;
-		if (m_pos.y >= m_fieldY - m_graphSize.y)
-		{
-			m_pos.y >= m_fieldY - m_graphSize.y;
-			m_isJumpUp = false;
-			m_isJumpDown = false;
-		}
-	}
+	m_vec.y += kGravity;
 }
 
 void Player::draw()
@@ -65,21 +68,21 @@ void Player::draw()
 	if (m_isDead)
 	{
 		//死んだとき右側を表示
-		DrawRectGraphF(m_pos.x, m_pos.y, m_graphSize.x / 2, 0, m_graphSize.x / 2, m_graphSize.y, m_handle, true, false);
+		DrawRectGraphF(m_pos.x, m_pos.y, (int)m_graphSize.x / 2, 0, (int)m_graphSize.x / 2, (int)m_graphSize.y, m_handle, true, false);
 	}
 	else
 	{
 		//生きているときは左側を表示
-		DrawRectGraphF(m_pos.x, m_pos.y, 0, 0, m_graphSize.x / 2, m_graphSize.y, m_handle, true, false);
+		DrawRectGraphF(m_pos.x, m_pos.y, 0, 0, (int)m_graphSize.x / 2, (int)m_graphSize.y, m_handle, true, false);
 	}
 }
 
 bool Player::isCol(Car& car)
 {
 	float playerLeft = getPos().x;
-	float playerRight = getPos().x + getColSize().x;
+	float playerRight = getPos().x + kSizeX;
 	float playerTop = getPos().y;
-	float playerBottom = getPos().y + getColSize().y;
+	float playerBottom = getPos().y + kSizeY;
 
 	float carLeft = car.getPos().x;
 	float carRight = car.getPos().x + car.getSize().x;
