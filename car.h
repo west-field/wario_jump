@@ -60,4 +60,6 @@ private:
 	Vec2 m_vec;
 	// ’n–Ê‚Ì‚‚³
 	float m_fieldY;
+	//ˆø‚«•Ô‚·êŠ‚É—ˆ‚½‚©‚Ç‚¤‚©
+	bool m_isField;
 };
