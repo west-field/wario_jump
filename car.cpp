@@ -10,6 +10,13 @@ namespace
 
 	//車の速度
 	constexpr float kSpeed = -20.0f;
+
+	//ジャンプ力
+	constexpr float kJumpAcc = -18.0f;
+	//重力
+	constexpr float kGravity = 0.7f;
+	//場所
+	constexpr float kPlace = 300.0f;
 }
 
 Car::Car()
@@ -54,6 +61,9 @@ void Car::setup(float fieldY)
 		m_moveType = kMoveTypeReturn;
 	}
 
+	//デバッグ用
+	m_moveType = kMoveTypeStop;
+
 	//動き始めるまでの時間を設定 1秒から3秒待つ
 	m_waitFrame = GetRand(kWaitFrameMax) + kWaitFrameMin;
 }
@@ -89,7 +99,10 @@ void Car::update()
 void Car::draw()
 {
 	DrawGraphF(m_pos.x, m_pos.y, m_handle, true);
-//	DrawFormatString(0, 0, GetColor(255, 255, 255), "wait:%d", m_waitFrame);
+	DrawFormatString(0, 0, GetColor(255, 255, 255), "wait:%d", m_waitFrame);
+	DrawFormatString(0, 20, GetColor(255, 255, 255), "move:%d", m_moveType);
+	DrawFormatString(0, 40, GetColor(255, 255, 255), "pos.x:%3f", m_pos.x);
+	DrawFormatString(0, 60, GetColor(255, 255, 255), "pos.y:%d", m_pos.y);
 }
 
 //-----------------private-----------------
@@ -102,15 +115,30 @@ void Car::updateNormal()
 //一時停止フェイント
 void Car::updateStop()
 {
-	updateNormal();//仮
+	m_pos += m_vec;
+	
 }
 //ジャンプする
 void Car::updateJump()
 {
-	updateNormal();//仮
+	m_pos += m_vec;
+	bool isField = false;
+	if (m_pos.y >= m_fieldY - m_size.y)
+	{
+		m_pos.y = m_fieldY - m_size.y;
+		isField = true;
+	}
+	if (isField)
+	{
+		m_vec.y = kJumpAcc;//ジャンプ開始
+	}
+
+	m_vec.y += kGravity; 
+	
 }
 //途中で引き返す(必ず成功)
 void Car::updateReturn()
 {
-	updateNormal();//仮
+	m_pos += m_vec;
+	
 }
