@@ -2,6 +2,8 @@
 
 namespace Game
 {
+	//git変更のため
+
 	// ウインドウモード設定
 	constexpr bool kWindowMode = true;
 	// ウインドウ名
