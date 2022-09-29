@@ -42,6 +42,8 @@ private:
 	void updateJump();//ジャンプする
 	void updateReturn();//途中で引き返す(必ず成功)
 
+	void setOutside();
+
 private:
 	// グラフィックハンドル
 	int m_handle;
@@ -60,6 +62,13 @@ private:
 	Vec2 m_vec;
 	// 地面の高さ
 	float m_fieldY;
+	//画像を反転させる
+	bool m_isReversal;
+
 	//引き返す場所に来たかどうか
 	bool m_isField;
+	//数を数える
+	int m_num;
+	//範囲外かどうか
+	bool m_isOutside;
 };

@@ -9,7 +9,7 @@ namespace
 	constexpr int kWaitFrameMax = 180;
 
 	//車の速度
-	constexpr float kSpeed = -20.0f;
+	constexpr float kSpeed = -30.0f;
 
 	//ジャンプ力
 	constexpr float kJumpAcc = -18.0f;
@@ -25,7 +25,12 @@ Car::Car()
 	m_fieldY = 0.0f;
 	m_moveType = kMoveTypeNormal;
 	m_waitFrame = 0;
+	m_isReversal = false;
+
+
 	m_isField = false;
+	m_num = 0;
+	m_isOutside = false;
 }
 
 void Car::setGraphic(int handle)
@@ -63,7 +68,7 @@ void Car::setup(float fieldY)
 	}
 
 	//デバッグ用
-	m_moveType = kMoveTypeReturn;
+//	m_moveType = kMoveTypeReturn;
 
 	//動き始めるまでの時間を設定 1秒から3秒待つ
 	m_waitFrame = GetRand(kWaitFrameMax) + kWaitFrameMin;
@@ -71,6 +76,8 @@ void Car::setup(float fieldY)
 
 void Car::update()
 {
+	if (m_isOutside)	return;
+
 	if (m_waitFrame > 0)
 	{
 		m_waitFrame--;
@@ -99,7 +106,7 @@ void Car::update()
 
 void Car::draw()
 {
-	DrawGraphF(m_pos.x, m_pos.y, m_handle, true);
+	DrawRectGraphF(m_pos.x, m_pos.y,0,0,(int)m_size.x, (int)m_size.y, m_handle, true, m_isReversal);
 	DrawFormatString(0, 0, GetColor(255, 255, 255), "wait:%d", m_waitFrame);
 	DrawFormatString(0, 20, GetColor(255, 255, 255), "move:%d", m_moveType);
 	DrawFormatString(0, 40, GetColor(255, 255, 255), "pos.x:%3f", m_pos.x);
@@ -111,17 +118,44 @@ void Car::draw()
 //まっすぐ進む
 void Car::updateNormal()
 {
+	if (m_isOutside)	return;
+
 	m_pos += m_vec;
+
+	setOutside();
 }
 //一時停止フェイント
 void Car::updateStop()
 {
-	m_pos += m_vec;
+	if (m_isOutside)	return;
+
+	if (m_pos.x < kPlace)
+	{
+		m_isField = true;
+	}
 	
+	if (m_isField && m_num <= 100)
+	{
+		m_num++;
+	}
+	else //if(!m_isField)
+	{
+		m_pos += m_vec;
+	}
+
+	if (m_isField && m_num > 100)
+	{
+		m_pos += m_vec;
+	}
+
+	setOutside();
 }
 //ジャンプする
 void Car::updateJump()
 {
+
+	if (m_isOutside)	return;
+
 	m_pos += m_vec;
 	bool isField = false;
 	if (m_pos.y >= m_fieldY - m_size.y)
@@ -135,11 +169,15 @@ void Car::updateJump()
 	}
 
 	m_vec.y += kGravity; 
+
+	setOutside();
 	
 }
 //途中で引き返す(必ず成功)
 void Car::updateReturn()
 {
+	if (m_isOutside)	return;
+
 	if (m_pos.x < kPlace - 50)
 	{
 		m_isField = true;
@@ -148,9 +186,19 @@ void Car::updateReturn()
 	if (m_isField)
 	{
 		m_pos -= m_vec;
+		m_isReversal = true;
 	}
 	else
 	{
 		m_pos += m_vec;
+	}
+	setOutside();
+}
+
+void Car::setOutside()
+{
+	if (m_pos.x < 0 - m_size.x || m_pos.x > Game::kScreenWidth + 16.0f)
+	{
+		m_isOutside = true;
 	}
 }
