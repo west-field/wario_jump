@@ -25,7 +25,6 @@ Car::Car()
 	m_fieldY = 0.0f;
 	m_moveType = kMoveTypeNormal;
 	m_waitFrame = 0;
-	m_isReversal = false;
 
 
 	m_isField = false;
@@ -39,6 +38,7 @@ void Car::setGraphic(int handle)
 	GetGraphSizeF(m_handle, &m_size.x, &m_size.y);
 }
 
+//初期化はまとめる
 void Car::setup(float fieldY)
 {
 	m_fieldY = fieldY;
@@ -66,12 +66,11 @@ void Car::setup(float fieldY)
 	{
 		m_moveType = kMoveTypeReturn;
 	}
-
-	//デバッグ用
-//	m_moveType = kMoveTypeReturn;
-
 	//動き始めるまでの時間を設定 1秒から3秒待つ
 	m_waitFrame = GetRand(kWaitFrameMax) + kWaitFrameMin;
+
+	m_isOutside = false;
+
 }
 
 void Car::update()
@@ -106,7 +105,15 @@ void Car::update()
 
 void Car::draw()
 {
-	DrawRectGraphF(m_pos.x, m_pos.y,0,0,(int)m_size.x, (int)m_size.y, m_handle, true, m_isReversal);
+	if (m_vec.x <= 0.0f)
+	{
+		DrawGraphF(m_pos.x, m_pos.y, m_handle, true);
+	}
+	else
+	{
+		DrawTurnGraphF(m_pos.x, m_pos.y, m_handle, true);
+	}
+
 	DrawFormatString(0, 0, GetColor(255, 255, 255), "wait:%d", m_waitFrame);
 	DrawFormatString(0, 20, GetColor(255, 255, 255), "move:%d", m_moveType);
 	DrawFormatString(0, 40, GetColor(255, 255, 255), "pos.x:%3f", m_pos.x);
@@ -122,7 +129,10 @@ void Car::updateNormal()
 
 	m_pos += m_vec;
 
-	setOutside();
+	if (m_pos.x < 0 - m_size.x)
+	{
+		m_isOutside = true;
+	}
 }
 //一時停止フェイント
 void Car::updateStop()
@@ -148,7 +158,10 @@ void Car::updateStop()
 		m_pos += m_vec;
 	}
 
-	setOutside();
+	if (m_pos.x < 0 - m_size.x)
+	{
+		m_isOutside = true;
+	}
 }
 //ジャンプする
 void Car::updateJump()
@@ -170,12 +183,16 @@ void Car::updateJump()
 
 	m_vec.y += kGravity; 
 
-	setOutside();
+	if (m_pos.x < 0 - m_size.x)
+	{
+		m_isOutside = true;
+	}
 	
 }
 //途中で引き返す(必ず成功)
 void Car::updateReturn()
 {
+	//いったん止まって引き返す　m_stopFrame で止まって　ベクトルを反転させる
 	if (m_isOutside)	return;
 
 	if (m_pos.x < kPlace - 50)
@@ -186,18 +203,14 @@ void Car::updateReturn()
 	if (m_isField)
 	{
 		m_pos -= m_vec;
-		m_isReversal = true;
 	}
 	else
 	{
 		m_pos += m_vec;
 	}
-	setOutside();
-}
+	// 画面外に出たら終了
 
-void Car::setOutside()
-{
-	if (m_pos.x < 0 - m_size.x || m_pos.x > Game::kScreenWidth + 16.0f)
+	if (m_pos.x > Game::kScreenWidth + 16.0f)
 	{
 		m_isOutside = true;
 	}

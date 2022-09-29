@@ -54,6 +54,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			player.setDead(true);
 		}
 
+		//再登場フラグ
+		/*
+		if (car.isRestart())
+		{
+			if (player.isDead())
+			{
+				deadcount++;//何回死んだかカウント
+			}
+			else
+			{
+				successCount++;//死んでないときカウント
+			}
+			car.setup(kFieldY);
+			player.setDead(false);
+		}
+		*/
 		// 地面の描画
 		DrawLine(0, kFieldY, Game::kScreenWidth, kFieldY, GetColor(255, 255, 255));
 		player.draw();
