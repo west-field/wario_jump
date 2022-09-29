@@ -16,7 +16,7 @@ namespace
 	//重力
 	constexpr float kGravity = 0.7f;
 	//場所
-	constexpr float kPlace = 300.0f;
+	constexpr float kPlace = 400.0f;
 }
 
 Car::Car()
@@ -62,7 +62,7 @@ void Car::setup(float fieldY)
 	}
 
 	//デバッグ用
-	m_moveType = kMoveTypeStop;
+	m_moveType = kMoveTypeJump;
 
 	//動き始めるまでの時間を設定 1秒から3秒待つ
 	m_waitFrame = GetRand(kWaitFrameMax) + kWaitFrameMin;
@@ -128,7 +128,7 @@ void Car::updateJump()
 		m_pos.y = m_fieldY - m_size.y;
 		isField = true;
 	}
-	if (isField)
+	if (isField && m_pos.x < kPlace)
 	{
 		m_vec.y = kJumpAcc;//ジャンプ開始
 	}
