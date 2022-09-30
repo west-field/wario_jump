@@ -9,10 +9,10 @@ namespace
 	constexpr int kWaitFrameMax = 180;
 
 	//車の速度
-	constexpr float kSpeed = -30.0f;
+	constexpr float kSpeed = -25.0f;
 
 	//ジャンプ力
-	constexpr float kJumpAcc = -18.0f;
+	constexpr float kJumpAcc = -20.0f;
 	//重力
 	constexpr float kGravity = 0.7f;
 	//場所
@@ -26,10 +26,10 @@ Car::Car()
 	m_moveType = kMoveTypeNormal;
 	m_waitFrame = 0;
 
+	m_isRestart = false;
 
 	m_isField = false;
 	m_num = 0;
-	m_isOutside = false;
 }
 
 void Car::setGraphic(int handle)
@@ -69,14 +69,13 @@ void Car::setup(float fieldY)
 	//動き始めるまでの時間を設定 1秒から3秒待つ
 	m_waitFrame = GetRand(kWaitFrameMax) + kWaitFrameMin;
 
-	m_isOutside = false;
-
+	m_isRestart = false;
+	m_isField = false;
+	m_num = 0;
 }
 
 void Car::update()
 {
-	if (m_isOutside)	return;
-
 	if (m_waitFrame > 0)
 	{
 		m_waitFrame--;
@@ -114,10 +113,12 @@ void Car::draw()
 		DrawTurnGraphF(m_pos.x, m_pos.y, m_handle, true);
 	}
 
-	DrawFormatString(0, 0, GetColor(255, 255, 255), "wait:%d", m_waitFrame);
-	DrawFormatString(0, 20, GetColor(255, 255, 255), "move:%d", m_moveType);
-	DrawFormatString(0, 40, GetColor(255, 255, 255), "pos.x:%3f", m_pos.x);
-	DrawFormatString(0, 60, GetColor(255, 255, 255), "pos.y:%d", m_pos.y);
+	DrawFormatString(0, 0, GetColor(255, 255, 255), "move%d", m_moveType);
+}
+
+bool Car::isRestart()
+{
+	return m_isRestart;
 }
 
 //-----------------private-----------------
@@ -125,20 +126,16 @@ void Car::draw()
 //まっすぐ進む
 void Car::updateNormal()
 {
-	if (m_isOutside)	return;
-
 	m_pos += m_vec;
 
 	if (m_pos.x < 0 - m_size.x)
 	{
-		m_isOutside = true;
+		m_isRestart = true;
 	}
 }
 //一時停止フェイント
 void Car::updateStop()
 {
-	if (m_isOutside)	return;
-
 	if (m_pos.x < kPlace)
 	{
 		m_isField = true;
@@ -160,15 +157,12 @@ void Car::updateStop()
 
 	if (m_pos.x < 0 - m_size.x)
 	{
-		m_isOutside = true;
+		m_isRestart = true;
 	}
 }
 //ジャンプする
 void Car::updateJump()
 {
-
-	if (m_isOutside)	return;
-
 	m_pos += m_vec;
 	bool isField = false;
 	if (m_pos.y >= m_fieldY - m_size.y)
@@ -185,7 +179,7 @@ void Car::updateJump()
 
 	if (m_pos.x < 0 - m_size.x)
 	{
-		m_isOutside = true;
+		m_isRestart = true;
 	}
 	
 }
@@ -193,7 +187,6 @@ void Car::updateJump()
 void Car::updateReturn()
 {
 	//いったん止まって引き返す　m_stopFrame で止まって　ベクトルを反転させる
-	if (m_isOutside)	return;
 
 	if (m_pos.x < kPlace - 50)
 	{
@@ -212,6 +205,6 @@ void Car::updateReturn()
 
 	if (m_pos.x > Game::kScreenWidth + 16.0f)
 	{
-		m_isOutside = true;
+		m_isRestart = true;
 	}
 }

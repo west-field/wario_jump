@@ -19,6 +19,8 @@ public:
 	// 描画
 	void draw();
 
+	bool isRestart();
+
 	// 位置の取得
 	Vec2 getPos() const { return m_pos; }
 	// サイズの取得
@@ -62,12 +64,10 @@ private:
 	float m_fieldY;
 
 	//再登場フラグ
-
+	bool m_isRestart;
 
 	//引き返す場所に来たかどうか
 	bool m_isField;
 	//数を数える
 	int m_num;
-	//範囲外かどうか
-	bool m_isOutside;
 };
